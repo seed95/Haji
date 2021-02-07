@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 07, 2021 at 04:53 PM
+-- Generation Time: Feb 07, 2021 at 05:27 PM
 -- Server version: 10.3.27-MariaDB-cll-lve
 -- PHP Version: 7.3.6
 
@@ -38,14 +38,20 @@ CREATE TABLE `vip` (
 --
 
 INSERT INTO `vip` (`id`, `time`) VALUES
-(1199000735, '1612189136'),
-(118205890, '1613189136'),
-(767440644, '1614995107'),
+(118205890, '20'),
+(767440644, '122'),
 (1053736483, '1615047491'),
-(118205890, '12345'),
-(118205890, '1234590'),
-(118205891, '12345'),
-(118205890, '12345123');
+(1199000735, '1612189136');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `vip`
+--
+ALTER TABLE `vip`
+  ADD UNIQUE KEY `id` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

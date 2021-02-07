@@ -33,6 +33,7 @@ if ($err) {
         meti('sendmessage',['chat_id'=>$userid,'text'=>"پرداخت شما با موفقیت انجام شد ✅ \n\nلینک گروه \nhttps://t.me/joinchat/UL1sI0bP6OnqOa2P"]);
         meti('restrictChatMember',['chat_id'=> $config['group'],'user_id'=>$userid,'can_post_messages'=>true,'can_add_web_page_previews'=>false,'can_send_other_messages'=>true,'can_send_media_messages'=>true,]);
         $time = time() + 2628000;
+        // INSERT INTO vip (id, time) VALUES(118205890, 19) ON DUPLICATE KEY UPDATE time=20;
         $connect->query("INSERT INTO vip (id,time) VALUES ('$userid', '$time')");
         header("Location: https://t.me/php08");
     } else {
