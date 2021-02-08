@@ -35,9 +35,9 @@ function meti($method, $datas=[])
 	global $config;
 	$url = 'https://api.telegram.org/bot'.$config['token'].'/'.$method;
 	$ch = curl_init();
-	curl_setopt($ch,CURLOPT_URL,$url);
-	curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-	curl_setopt($ch,CURLOPT_POSTFIELDS,$datas);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $datas);
 	$res = curl_exec($ch);
 	if(curl_error($ch))
 	{
@@ -66,6 +66,7 @@ if(isset($update->callback_query))
 	$from_id = $update->callback_query->from->id;
 	$callback_id = $update->callback_query->id;
 	$message_id = $update->callback_query->message->message_id;
+	$phone_number = $user['pn'];
 }
 $user = mysqli_fetch_assoc(mysqli_query($connect,"SELECT * FROM user WHERE id = '$from_id'"));
 ##########################[ Keyboard ]###########################

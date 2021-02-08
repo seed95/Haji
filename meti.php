@@ -33,61 +33,75 @@ if(isset($update))
 
 }
 //************************************************************
-if($update->message->chat->type == 'private')
+if( $update->message->chat->type=='private' )
 {
 	if( strpos($text, "charge")!==false and in_array($from_id, $admins))
 	{
-		$charge_text = "ajab successfuly charge user " . $from_id . " " . $text;
-		// $time = time() + 30*24*60*60;//30 day
-		// $connect->query("INSERT INTO vip (id,time) VALUES ('$userid', '$time')");
-		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
+		$split_text = explode(" ", $text);
+		$day = $split_text[1];
+		$user_id = $split_text[2];
+
+		$time = time() + $day*24*60*60;//second
+		$update_query = "INSERT INTO vip (id, time) VALUES('$user_id', '$time')";
+		$update_query = $update_query." ON DUPLICATE KEY UPDATE time='$time';";
+		$connect->query($update_query);
+		$charge_text = "charge user " . $user_id . " " . $day;
+		if( $user['pn']==null )
+		{
+			$charge_text = "charge user " . $user['text'];
+			meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
+		}
+		else
+		{
+			meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$update_query]);	
+		}
 	}
 	elseif( $text=="/start" )
 	{
-		$connect->query("UPDATE user SET step = 'none' WHERE id = '$from_id'");
 		$start_message = "به ربات گروه حبوبات و خشکبار خوش آمدید\n\nبرای خرید اشتراک ماهانه از دکمه زیر استفاده کنید";
 		meti('sendmessage',['chat_id'=>$chat_id,'text'=>$start_message,'reply_markup'=>$home]);
 	}
 	elseif( $text=="خرید اشتراک🌟" )
 	{
-		$connect->query("UPDATE user SET step = 'resavephone' WHERE id = '$from_id'");
-		meti('sendmessage',['chat_id'=>$chat_id,'text'=>"جهت انجام عملیات پرداخت شما باید شماره تماس خود را برای ما از دکمه زیر ارسال کنید👇🏽",'reply_markup'=>$butphone]);
-	}
-	elseif( $user['step']=='resavephone' )
-	{
-		if(isset($contact))
+		if( $user['pn']==null )
 		{
-			if($update->message->contact->user_id == $from_id)
+			meti('sendmessage',['chat_id'=>$chat_id,'text'=>"جهت انجام عملیات پرداخت شما باید شماره تماس خود را برای ما از دکمه زیر ارسال کنید👇🏽",'reply_markup'=>$butphone]);
+		}
+		else
+		{
+			meti('sendmessage',['chat_id'=>$chat_id,'text'=>"خرید حساب ویژه جهت ارسال پیام در گروه 🌟\n\n💳مبلغ قابل پرداخت : {$config['coin']} تومان\n📞شماره تماس : $phone_number\n\nجهت ساخت لینک پرداخت از دکمه زیر استفاده کنید👇🏽",'reply_markup'=>$butpay]);
+		}
+	}
+	elseif( isset($contact) )
+	{
+		if( $update->message->contact->user_id==$from_id )
+		{
+			if( strpos($phone_number,'98')===0 || strpos($phone_number,'+98')===0 )
 			{
-				if(strpos($phone_number,'98')===0||strpos($phone_number,'+98')===0)
-				{
-					$phone_number='0'.strrev(substr(strrev($phone_number),0,10));
-					$connect->query("UPDATE user SET step = 'none',text='$phone_number' WHERE id = '$from_id'");
-					meti('sendmessage',['chat_id'=>$chat_id,'text'=>"شماره تماس $phone_number با موفقیت تایید شد ✅",'reply_markup'=>$home]);
-					meti('sendmessage',['chat_id'=>$chat_id,'text'=>"خرید حساب ویژه جهت ارسال پیام در گروه 🌟\n\n💳مبلغ قابل پرداخت : {$config['coin']} تومان\n📞شماره تماس : $phone_number\n\nجهت ساخت لینک پرداخت از دکمه زیر استفاده کنید👇🏽",'reply_markup'=>$butpay]);
-				}
-				else
-				{
-					$connect->query("UPDATE user SET step = 'none' WHERE id = '$from_id'");
-					meti('sendmessage',['chat_id'=>$chat_id,'text'=>"کاربر عزیز به دلیل اینکه شماره شما برای ایران نمیباشد ما نمیتوانیم هویت شما را تایید  کنیم ❗️" ,'reply_markup'=>$home]);
-				}
+				$phone_number='0'.strrev(substr(strrev($phone_number),0,10));
+				$connect->query("UPDATE user SET pn = '$phone_number' WHERE id = '$from_id'");
+				meti('sendmessage',['chat_id'=>$chat_id,'text'=>"شماره تماس $phone_number با موفقیت تایید شد ✅",'reply_markup'=>$home]);
+				meti('sendmessage',['chat_id'=>$chat_id,'text'=>"خرید حساب ویژه جهت ارسال پیام در گروه 🌟\n\n💳مبلغ قابل پرداخت : {$config['coin']} تومان\n📞شماره تماس : $phone_number\n\nجهت ساخت لینک پرداخت از دکمه زیر استفاده کنید👇🏽",'reply_markup'=>$butpay]);
 			}
 			else
 			{
-				$connect->query("UPDATE user SET step = 'none' WHERE id = '$from_id'");
-				meti('sendmessage',['chat_id'=>$chat_id,'text'=>"لطفا شماره این اکانت را ارسال کنید❗️",'reply_markup'=>$home]);
+				meti('sendmessage',['chat_id'=>$chat_id,'text'=>"کاربر عزیز به دلیل اینکه شماره شما برای ایران نمیباشد ما نمیتوانیم هویت شما را تایید  کنیم ❗️" ,'reply_markup'=>$home]);
 			}
 		}
 		else
 		{
-			meti('sendmessage',['chat_id'=>$chat_id,'text'=>"شما فقط میتوانید از دکمه زیر هویت خودتان تایید بکنید👇🏽",'reply_markup'=>$butphone]);
+			meti('sendmessage',['chat_id'=>$chat_id,'text'=>"لطفا شماره این اکانت را ارسال کنید❗️",'reply_markup'=>$home]);
 		}
+	}
+	else
+	{
+		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$text]);
 	}
 
 }
 elseif($data == "payment")
 {
-	$pay = pay($from_id,$user['text']);
+	$pay = pay($from_id, $user['pn']);
 	if($pay != 'false')
 	{
 		meti('AnswerCallbackQuery',['callback_query_id'=>$callback_id,'text'=>'لینک پرداخت ساخته شد ✅','show_alert'=>true]);    
@@ -128,6 +142,6 @@ if($update->message->chat->type != 'private')
 //************************************************************
 if($user["id"] != true)
 {
-	$connect->query("INSERT INTO user (id, step,text) VALUES ('$from_id', 'none','null')");
+	$connect->query("INSERT INTO user (id) VALUES ('$from_id')");
 }
 //************************************************************
