@@ -14,11 +14,11 @@ date_default_timezone_set("asia/tehran");
 https://api.telegram.org/bot1493103296:AAGaF87B7rzzIl4KguQ7rCepl3EMGjkS4lo/setWebhook?url=https://khoshkbardostan.xyz/bots/meti.php
 */
 ##########################[ Config ]###########################
-$config = 
+$config =
 [
 	'token' => "1493103296:AAGaF87B7rzzIl4KguQ7rCepl3EMGjkS4lo", // Token Bot
 	'group'=>-1001355530846,// Group ID
-	'coin'=>35000 // Coin Payment(Toman)
+	'coin'=>15000 // Coin Payment(Toman)
 ];
 $admins = [66469061/*09103583256*/,118205890/*09383843814*/]; // ids for charge users
 //Database logging
@@ -103,10 +103,10 @@ function pay($from_id,$phone)
 	$err = curl_error($ch);
 	$result = json_decode($result, true, JSON_PRETTY_PRINT);
 	curl_close($ch);
-	if ($err) 
+	if ($err)
 	{
 		 return 'false';
-	} 
+	}
 	else
 	{
 		if( empty($result['errors']) )
@@ -115,8 +115,8 @@ function pay($from_id,$phone)
 			{
 				return 'https://www.zarinpal.com/pg/StartPay/' . $result['data']["authority"];
 			}
-		} 
-		else 
+		}
+		else
 		{
 			return 'false';
 		}

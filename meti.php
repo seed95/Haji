@@ -15,13 +15,13 @@ if(isset($update))
 	$ip_dec = (float) sprintf("%u", ip2long($_SERVER['REMOTE_ADDR']));
 	$ok = false;
 	foreach ($telegram_ip_ranges as $telegram_ip_range)
-	{ 
-		if (!$ok) 
+	{
+		if (!$ok)
 		{
 			$lower_dec = (float) sprintf("%u", ip2long($telegram_ip_range['lower']));
 			$upper_dec = (float) sprintf("%u", ip2long($telegram_ip_range['upper']));
 			if ($ip_dec >= $lower_dec and $ip_dec <= $upper_dec)
-			{ 
+			{
 				$ok = true;
 			}
 		}
@@ -35,7 +35,31 @@ if(isset($update))
 //************************************************************
 if( $update->message->chat->type=='private' )
 {
-	if( strpos($text, "charge")!==false and in_array($from_id, $admins))
+	if( strpos(strtolower($str), "g")!==false and in_array($from_id, $admins))//grant
+	{
+		$split_text = explode(" ", $text);
+		$user_id = $split_text[1];
+
+		meti('restrictChatMember',[ 'chat_id'=> $config['group'], 'user_id'=>$user_id,
+																'can_send_messages'=>true, 'can_add_web_page_previews'=>true,
+																'can_send_other_messages'=>true, 'can_send_media_messages'=>true,
+																'can_invite_users'=>true]);
+		$charge_text = "allow user " . $user_id . " to send message";
+		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
+	}
+	else if( strpos(strtolower($str), "R")!==false and in_array($from_id, $admins))//restrict
+	{
+		$split_text = explode(" ", $text);
+		$user_id = $split_text[1];
+
+		meti('restrictChatMember',[ 'chat_id'=> $config['group'], 'user_id'=>$user_id,
+																'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
+																'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
+																'can_invite_users'=>true]);
+		$charge_text = "restrict user " . $user_id . " to send message";
+		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
+	}
+	else if( strpos($text, "charge")!==false and in_array($from_id, $admins))//charge
 	{
 		$split_text = explode(" ", $text);
 		$day = $split_text[1];
@@ -45,15 +69,19 @@ if( $update->message->chat->type=='private' )
 		$update_query = "INSERT INTO vip (id, time) VALUES('$user_id', '$time')";
 		$update_query = $update_query." ON DUPLICATE KEY UPDATE time='$time';";
 		$connect->query($update_query);
+		meti('restrictChatMember',[ 'chat_id'=> $config['group'], 'user_id'=>$user_id,
+																'can_send_messages'=>true, 'can_add_web_page_previews'=>true,
+																'can_send_other_messages'=>true, 'can_send_media_messages'=>true,
+																'can_invite_users'=>true]);
 		$charge_text = "charge user " . $user_id . " " . $day;
 		if( $user['pn']==null )
 		{
-			$charge_text = "charge user " . $user['text'];
+			$charge_text = "user with id " . $user_id . " no have number in table `user`";
 			meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
 		}
 		else
 		{
-			meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$update_query]);	
+			meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$update_query]);
 		}
 	}
 	elseif( $text=="/start" )
@@ -104,7 +132,7 @@ elseif($data == "payment")
 	$pay = pay($from_id, $user['pn']);
 	if($pay != 'false')
 	{
-		meti('AnswerCallbackQuery',['callback_query_id'=>$callback_id,'text'=>'لینک پرداخت ساخته شد ✅','show_alert'=>true]);    
+		meti('AnswerCallbackQuery',['callback_query_id'=>$callback_id,'text'=>'لینک پرداخت ساخته شد ✅','show_alert'=>true]);
 		meti('EditMessageReplyMarkup',['chat_id'=>$chat_id,'message_id'=>$message_id,'reply_markup'=>json_encode(['inline_keyboard'=>[[['text'=>"پرداخت فاکتور💳",'url'=>$pay]]]])]);
 	}
 	else
@@ -121,19 +149,24 @@ if($update->message->chat->type != 'private')
 	{
 		if($chat_id == $config['group'])
 		{
-			$vip = mysqli_fetch_assoc(mysqli_query($connect,"SELECT * FROM vip WHERE id = '$from_id'"));
+			$vip = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM vip WHERE id = '$from_id'"));
 			if($vip != true)
 			{
 				meti('deleteMessage',['chat_id'=>$chat_id,'message_id'=>$message_id]);
-				meti('restrictChatMember',['chat_id'=>$chat_id,'user_id'=>$from_id,'can_post_messages'=>true]);
+				meti('restrictChatMember',[ 'chat_id'=> $chat_id, 'user_id'=>$from_id,
+																		'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
+																		'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
+																		'can_send_polls'=>false, 'can_invite_users'=>true]);
 			}
 			else
 			{
 				if($vip['time'] <= time())
 				{
 					meti('deleteMessage',['chat_id'=>$chat_id,'message_id'=>$message_id]);
-					meti('sendmessage',['chat_id'=>$from_id,'text'=>"با عرض پوزش مهلت اشتراک 1 ماهه شما به اتمام رسیده است و نمیتوانید هیچ پیامی ارسال کنید❗️"]);
-					meti('restrictChatMember',['chat_id'=>$chat_id,'user_id'=>$from_id,'can_post_messages'=>true]);
+					meti('restrictChatMember',[ 'chat_id'=> $chat_id, 'user_id'=>$from_id,
+																			'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
+																			'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
+																			'can_send_polls'=>false, 'can_invite_users'=>true]);
 				}
 			}
 		}
