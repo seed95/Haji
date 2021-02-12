@@ -14,11 +14,12 @@ date_default_timezone_set("asia/tehran");
 https://api.telegram.org/bot1493103296:AAGaF87B7rzzIl4KguQ7rCepl3EMGjkS4lo/setWebhook?url=https://khoshkbardostan.xyz/bots/meti.php
 */
 ##########################[ Config ]###########################
-$config =
+$config = 
 [
 	'token' => "1493103296:AAGaF87B7rzzIl4KguQ7rCepl3EMGjkS4lo", // Token Bot
-	'group'=>-1001355530846,// Group ID
-	'coin'=>15000 // Coin Payment(Toman)
+	'group'=>-1001350644600,	// Group ID
+	'groupTest'=>-1001355530846,
+	'coin'=>35000 // Coin Payment(Toman)
 ];
 $admins = [66469061/*09103583256*/,118205890/*09383843814*/]; // ids for charge users
 //Database logging
@@ -86,7 +87,7 @@ function pay($from_id,$phone)
 	$data = array("merchant_id" => "aec082bc-d960-417b-9b0b-6fe6a1ef01b2",
 		"amount" => $config['coin']*10,
 		"callback_url" => "https://khoshkbardostan.xyz/bots/verify.php?userid=$from_id",
-		"description" => "اشتراک $from_id",
+		"description" => "Ø§Ø´ØªØ±Ø§Ú© $from_id",
 		"metadata" => ["email" => "info@email.com","mobile"=>$phone],
 	);
 	$jsonData = json_encode($data);
@@ -103,10 +104,10 @@ function pay($from_id,$phone)
 	$err = curl_error($ch);
 	$result = json_decode($result, true, JSON_PRETTY_PRINT);
 	curl_close($ch);
-	if ($err)
+	if ($err) 
 	{
 		 return 'false';
-	}
+	} 
 	else
 	{
 		if( empty($result['errors']) )
@@ -115,8 +116,8 @@ function pay($from_id,$phone)
 			{
 				return 'https://www.zarinpal.com/pg/StartPay/' . $result['data']["authority"];
 			}
-		}
-		else
+		} 
+		else 
 		{
 			return 'false';
 		}

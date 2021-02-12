@@ -35,31 +35,57 @@ if(isset($update))
 //************************************************************
 if( $update->message->chat->type=='private' )
 {
-	if( strpos(strtolower($str), "g")!==false and in_array($from_id, $admins))//grant
+	$split_text = explode(" ", $text);
+
+	if( $split_text[0]=="/grant" and in_array($from_id, $admins))
 	{
 		$split_text = explode(" ", $text);
 		$user_id = $split_text[1];
 
 		meti('restrictChatMember',[ 'chat_id'=> $config['group'], 'user_id'=>$user_id,
-																'can_send_messages'=>true, 'can_add_web_page_previews'=>true,
-																'can_send_other_messages'=>true, 'can_send_media_messages'=>true,
-																'can_invite_users'=>true]);
+									'can_send_messages'=>true, 'can_add_web_page_previews'=>true,
+									'can_send_other_messages'=>true, 'can_send_media_messages'=>true,
+									'can_invite_users'=>true]);
 		$charge_text = "allow user " . $user_id . " to send message";
 		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
 	}
-	else if( strpos(strtolower($str), "R")!==false and in_array($from_id, $admins))//restrict
+	else if( $split_text[0]=="/tgrant" and in_array($from_id, $admins))//test grant
+	{
+		$split_text = explode(" ", $text);
+		$user_id = $split_text[1];
+
+		meti('restrictChatMember',[ 'chat_id'=> $config['groupTest'], 'user_id'=>$user_id,
+									'can_send_messages'=>true, 'can_add_web_page_previews'=>true,
+									'can_send_other_messages'=>true, 'can_send_media_messages'=>true,
+									'can_invite_users'=>true]);
+		$charge_text = "allow user " . $user_id . " to send message in test group";
+		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
+	}
+	else if( $split_text[0]=="/restrict" and in_array($from_id, $admins))
 	{
 		$split_text = explode(" ", $text);
 		$user_id = $split_text[1];
 
 		meti('restrictChatMember',[ 'chat_id'=> $config['group'], 'user_id'=>$user_id,
-																'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
-																'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
-																'can_invite_users'=>true]);
+									'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
+									'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
+									'can_invite_users'=>true]);
 		$charge_text = "restrict user " . $user_id . " to send message";
 		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
 	}
-	else if( strpos($text, "charge")!==false and in_array($from_id, $admins))//charge
+	else if( $split_text[0]=="/trestrict" and in_array($from_id, $admins))//test restrict
+	{
+		$split_text = explode(" ", $text);
+		$user_id = $split_text[1];
+
+		meti('restrictChatMember',[ 'chat_id'=> $config['groupTest'], 'user_id'=>$user_id,
+									'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
+									'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
+									'can_invite_users'=>true]);
+		$charge_text = "restrict user " . $user_id . " to send message in test group";
+		meti('sendmessage', ['chat_id'=>$chat_id, 'text'=>$charge_text]);
+	}
+	else if( $split_text[0]=="/charge" and in_array($from_id, $admins))//charge
 	{
 		$split_text = explode(" ", $text);
 		$day = $split_text[1];
@@ -147,16 +173,16 @@ if($update->message->chat->type != 'private')
 
 	if( $status!='creator' and $status!='administrator' )
 	{
-		if($chat_id == $config['group'])
+		if( $chat_id==$config['group'] or $chat_id==$config['groupTest'] )
 		{
 			$vip = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM vip WHERE id = '$from_id'"));
 			if($vip != true)
 			{
 				meti('deleteMessage',['chat_id'=>$chat_id,'message_id'=>$message_id]);
 				meti('restrictChatMember',[ 'chat_id'=> $chat_id, 'user_id'=>$from_id,
-																		'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
-																		'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
-																		'can_send_polls'=>false, 'can_invite_users'=>true]);
+											'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
+											'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
+											'can_send_polls'=>false, 'can_invite_users'=>true]);
 			}
 			else
 			{
@@ -164,9 +190,9 @@ if($update->message->chat->type != 'private')
 				{
 					meti('deleteMessage',['chat_id'=>$chat_id,'message_id'=>$message_id]);
 					meti('restrictChatMember',[ 'chat_id'=> $chat_id, 'user_id'=>$from_id,
-																			'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
-																			'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
-																			'can_send_polls'=>false, 'can_invite_users'=>true]);
+												'can_send_messages'=>false, 'can_add_web_page_previews'=>false,
+												'can_send_other_messages'=>false, 'can_send_media_messages'=>false,
+												'can_send_polls'=>false, 'can_invite_users'=>true]);
 				}
 			}
 		}

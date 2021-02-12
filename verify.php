@@ -35,9 +35,9 @@ else
 	{
 		meti('sendmessage',['chat_id'=>$userid,'text'=>"پرداخت شما با موفقیت انجام شد ✅ \n\nلینک گروه \nhttps://t.me/joinchat/UL1sI0bP6OnqOa2P"]);
 		meti('restrictChatMember',[ 'chat_id'=> $config['group'], 'user_id'=>$userid,
-																'can_send_messages'=>true, 'can_add_web_page_previews'=>true,
-																'can_send_other_messages'=>true, 'can_send_media_messages'=>true,
-																'can_invite_users'=>true]);
+									'can_send_messages'=>true, 'can_add_web_page_previews'=>true,
+									'can_send_other_messages'=>true, 'can_send_media_messages'=>true,
+									'can_invite_users'=>true]);
 		$time = time() + 30*24*60*60;//30 day
 		$update_query = "INSERT INTO vip (id, time) VALUES('$userid, '$time') ON DUPLICATE KEY UPDATE time='$time';";
 		$connect->query($update_query);
